@@ -264,7 +264,8 @@ export class Game {
     this.sky.update(dt, this.camera);
     this.water.update(dt, this.camera);
     this.particles.update(dt);
-    this.hud.update(dt, menuOpen && false);
+    this.hud.flat = this.vr.mode === 'flat';
+    this.hud.update(dt, false);
     this.menu.update(dt);
     this.pvp.update(dt);
 

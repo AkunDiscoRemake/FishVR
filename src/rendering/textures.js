@@ -22,12 +22,15 @@ export function waterNormalTexture(size = 256) {
     const img = ctx.createImageData(size, size);
     const H = new Float32Array(size * size);
     for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-      H[y * size + x] = tileNoise(x / size, y / size, 3.2, 4, 7) + 0.5 * tileNoise(x / size, y / size, 8, 2, 3);
+      const u = x / size, v = y / size;
+      // ridged directional ripples + isotropic detail, both periodic so the texture tiles
+      const ripple = Math.sin((u * 6 + v * 2) * Math.PI * 2 + tileNoise(u, v, 4, 3, 5) * 6) * 0.25;
+      H[y * size + x] = tileNoise(u, v, 6, 4, 7) + 0.4 * tileNoise(u, v, 16, 2, 3) + ripple;
     }
     for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
       const l = H[y * size + ((x - 1 + size) % size)], r = H[y * size + ((x + 1) % size)];
       const u = H[((y - 1 + size) % size) * size + x], d = H[((y + 1) % size) * size + x];
-      let nx = (l - r) * 6, ny = (u - d) * 6, nz = 1;
+      let nx = (l - r) * 4, ny = (u - d) * 4, nz = 1;
       const len = Math.hypot(nx, ny, nz);
       nx /= len; ny /= len; nz /= len;
       const i = (y * size + x) * 4;

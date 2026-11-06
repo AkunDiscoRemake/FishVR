@@ -28,7 +28,7 @@ export class SettingsScreen {
   constructor(menu) { this.menu = menu; this.title = 'SETTINGS'; this.page = 0; }
   draw(g, W, H) {
     const m = this.menu, game = m.game;
-    const per = 9, pages = Math.ceil(ROWS.length / per);
+    const per = 8, pages = Math.ceil(ROWS.length / per);
     ROWS.slice(this.page * per, this.page * per + per).forEach((r, i) => {
       const y = 108 + i * 54;
       g.rect(30, y, 640, 48, COLORS.panel, 12);
@@ -42,7 +42,7 @@ export class SettingsScreen {
         m.refresh();
       };
       g.button(390, y + 4, 56, 40, '<', () => step(-1), { size: 24 });
-      g.text(fmt(v), 520, y + 24, { size: 22, align: 'center', weight: 800, color: COLORS.accent2 });
+      g.text(fmt(v), 521, y + 24, { size: 19, align: 'center', weight: 800, color: COLORS.accent2, maxWidth: 136 });
       g.button(596, y + 4, 56, 40, '>', () => step(1), { size: 24 });
     });
     g.button(30, 600 - 30, 110, 50, '<', () => { this.page = (this.page - 1 + pages) % pages; m.refresh(); }, { size: 28 });

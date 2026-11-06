@@ -12,11 +12,11 @@ function woodMat(quality, repeatX = 1, repeatY = 1, base, dark) {
     : new THREE.MeshLambertMaterial({ map: t });
 }
 
-function deck(quality, minX, maxX, minZ, maxZ, y, thickness = 0.12) {
+function deck(quality, minX, maxX, minZ, maxZ, y, thickness = 0.12, base, dark) {
   const w = maxX - minX, l = maxZ - minZ;
   const g = new THREE.Group();
   const plankCount = Math.max(1, Math.round(l / 0.32));
-  const mat = woodMat(quality, 1, 1);
+  const mat = woodMat(quality, 1, 1, base || '#8a6440', dark || '#5a3c22');
   const geo = new THREE.BoxGeometry(w, thickness, l / plankCount * 0.94);
   for (let i = 0; i < plankCount; i++) {
     const p = new THREE.Mesh(geo, mat);
@@ -162,7 +162,7 @@ export function buildStructure(kind, quality) {
       group.add(posts(quality, -1.25, 1.25, -8, 14, 0.5, -3.5));
       group.add(deck(quality, -3.5, -1.3, -8, -4, 0.55));
       group.add(posts(quality, -3.45, -1.35, -8, -4, 0.5, -3.5, 4));
-      group.add(lantern(quality, 1.15, 0.55, -7.5, 0xffc070, quality.standardMaterials));
+      group.add(lantern(quality, 1.15, 0.55, 6, 0xffc070, quality.standardMaterials));
       group.add(cabin(quality, 12, 1.6, 24, -0.4));
       walkable.push({ minX: -1.3, maxX: 1.3, minZ: -8, maxZ: 14, y: 0.55 }, { minX: -3.5, maxX: -1.3, minZ: -8, maxZ: -4, y: 0.55 });
       break;
@@ -175,19 +175,20 @@ export function buildStructure(kind, quality) {
       break;
     }
     case 'pier': {
-      group.add(deck(quality, -1.7, 1.7, -30, 42, 3.0, 0.15));
+      group.add(deck(quality, -1.7, 1.7, -30, 42, 3.0, 0.15, '#9a7650', '#5a4028'));
       group.add(posts(quality, -1.65, 1.65, -30, 42, 2.95, -12, 3, 0.18));
       group.add(railing(quality, -1.7, 1.7, -30, 30, 3.0));
-      group.add(lantern(quality, -1.5, 3.0, -29, 0xfff0d0, false));
+      group.add(lantern(quality, -1.5, 3.0, -18, 0xfff0d0, false));
       group.add(lantern(quality, 1.5, 3.0, -10, 0xfff0d0, false));
       walkable.push({ minX: -1.7, maxX: 1.7, minZ: -30, maxZ: 42, y: 3.0 });
       break;
     }
     case 'jetty': {
-      group.add(deck(quality, -1.4, 1.4, -6, 28, 1.0));
-      group.add(posts(quality, -1.35, 1.35, -6, 28, 0.95, -4));
-      group.add(hut(quality, 0, 1.0, -9.5));
-      walkable.push({ minX: -1.4, maxX: 1.4, minZ: -6, maxZ: 28, y: 1.0 }, { minX: -2.2, maxX: 2.2, minZ: -11.7, maxZ: -6, y: 1.0 });
+      group.add(deck(quality, -1.4, 1.4, -14, 28, 1.0));
+      group.add(posts(quality, -1.35, 1.35, -14, 28, 0.95, -4));
+      group.add(deck(quality, 1.4, 2.2, -9, -7, 1.0));
+      group.add(hut(quality, 4.4, 1.0, -8));
+      walkable.push({ minX: -1.4, maxX: 1.4, minZ: -14, maxZ: 28, y: 1.0 }, { minX: 1.4, maxX: 2.2, minZ: -9, maxZ: -7, y: 1.0 }, { minX: 2.2, maxX: 6.6, minZ: -10.2, maxZ: -5.8, y: 1.0 });
       break;
     }
     case 'boat': {
@@ -206,6 +207,6 @@ export const SPAWNS = {
   lake: { x: 0, z: -6, yaw: 0 },
   river: { x: 0, z: 6.5, yaw: 0 },
   ocean: { x: 0, z: -27, yaw: 0 },
-  tropical: { x: 0, z: -10, yaw: 0 },
+  tropical: { x: 0, z: -12, yaw: 0 },
   deep: { x: 0, z: -2.4, yaw: 0 },
 };

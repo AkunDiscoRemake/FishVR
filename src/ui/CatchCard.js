@@ -20,7 +20,7 @@ export class CatchCard {
     const head = cam.getWorldPosition(new THREE.Vector3());
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.getWorldQuaternion(new THREE.Quaternion())).setY(0).normalize();
     const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
-    this.panel.mesh.position.copy(head).addScaledVector(fwd, 1.5).addScaledVector(right, 0.55).add(new THREE.Vector3(0, -0.05, 0));
+    this.panel.mesh.position.copy(head).addScaledVector(fwd, 1.55).addScaledVector(right, 0.62).add(new THREE.Vector3(0, -0.12, 0));
     this.panel.mesh.lookAt(head);
     this.panel.mesh.visible = true;
     this.panel.dirty = true;

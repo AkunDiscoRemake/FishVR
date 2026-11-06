@@ -217,6 +217,7 @@ export class FishingController {
     const f = this.fight;
     if (f.ended) return;
     f.ended = true;
+    this.ctx.hud.setFight(null);
     const result = f.state.result;
     this.guide.group.visible = false;
     const biter = this.ctx.fish.biter;
@@ -429,7 +430,8 @@ export class FishingController {
         this.landT += dt;
         const head = this._head();
         const fwd = this.fight.forward;
-        const landPos = head.clone().addScaledVector(fwd, 0.9).add(new THREE.Vector3(0, -0.15, 0));
+        const side = new THREE.Vector3(fwd.z, 0, -fwd.x); // to the player's left (the catch card sits on the right)
+        const landPos = head.clone().addScaledVector(fwd, 1.25).addScaledVector(side, 0.35).add(new THREE.Vector3(0, -0.3, 0));
         this.landPos = landPos;
         this.landYaw = Math.atan2(-fwd.x, -fwd.z);
         const fish = this.ctx.fish.biter;
@@ -540,8 +542,15 @@ export class FishingController {
     const fish = this.ctx.fish.biter;
     const kind = beat ? beat.kind : 'rest';
     if (fish) {
-      const dir = this._dirFromYawPitch(f.fishYaw, 0);
-      const target = f.origin.clone().addScaledVector(dir, f.dispDistance);
+      // keep the hooked fish over water: shrink its lateral angle, then its distance, if needed
+      let yawUse = f.fishYaw, distUse = f.dispDistance;
+      const world = this.world;
+      const dir = this._dirFromYawPitch(yawUse, 0);
+      let target = f.origin.clone().addScaledVector(dir, distUse);
+      for (let k = 0; k < 6 && world.waterDepth(target.x, target.z) < 1.2; k++) {
+        if (k < 3) yawUse *= 0.5; else distUse = Math.max(4, distUse * 0.8);
+        target = f.origin.clone().addScaledVector(this._dirFromYawPitch(yawUse, 0), distUse);
+      }
       const depth = kind === 'dive' && phase !== 'idle' ? -3.5 : -0.9 - (st.hp / st.hpMax) * 0.8;
       target.y = depth;
       fish.drivenTarget = target;
@@ -578,6 +587,7 @@ export class FishingController {
 
   /** Called by the game once the player closes the catch card. */
   finishLanding() {
+    this.mode = 'solo';
     this.ctx.fish.removeBiter();
     this.session = null;
     this.resetLure();

@@ -1,8 +1,8 @@
 // Instanced vegetation and props generated procedurally per world.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { foliageTexture } from '../rendering/textures.js';
 import { createRng } from '@game/rng.js';
+import { fbm } from '../rendering/noise.js';
 
 function colored(geo, color) {
   const g = geo.index ? geo.toNonIndexed() : geo;
@@ -59,6 +59,37 @@ function palmGeometry() {
   }
   parts.push(colored(new THREE.SphereGeometry(0.22, 6, 4).translate(x, y - 0.15, 0.1), 0x5a4a2a));
   return mergeGeometries(parts);
+}
+
+/** Tuft of curved grass blades with a dark-root to light-tip gradient (no alpha textures). */
+function grassGeometry(baseColor, tipColor) {
+  const pos = [], col = [];
+  const b = new THREE.Color(baseColor), t = new THREE.Color(tipColor);
+  const rng = createRng('grass');
+  for (let k = 0; k < 9; k++) {
+    const a = rng.next() * Math.PI * 2, r = rng.next() * 0.12;
+    const x0 = Math.cos(a) * r, z0 = Math.sin(a) * r;
+    const h = 0.25 + rng.next() * 0.35, w = 0.025 + rng.next() * 0.02;
+    const lean = 0.08 + rng.next() * 0.15, dir = rng.next() * Math.PI * 2;
+    const lx = Math.cos(dir) * lean, lz = Math.sin(dir) * lean;
+    const px = -Math.sin(dir) * w, pz = Math.cos(dir) * w;
+    const mid = [x0 + lx * 0.35, h * 0.55, z0 + lz * 0.35];
+    const top = [x0 + lx, h, z0 + lz];
+    const quad = [[x0 - px, 0, z0 - pz], [x0 + px, 0, z0 + pz], [mid[0] + px * 0.6, mid[1], mid[2] + pz * 0.6], [mid[0] - px * 0.6, mid[1], mid[2] - pz * 0.6]];
+    const cMid = b.clone().lerp(t, 0.55);
+    const push = (p, c) => { pos.push(p[0], p[1], p[2]); col.push(c.r, c.g, c.b); };
+    push(quad[0], b); push(quad[1], b); push(quad[2], cMid);
+    push(quad[0], b); push(quad[2], cMid); push(quad[3], cMid);
+    push(quad[3], cMid); push(quad[2], cMid); push(top, t);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  // grass looks better lit from above regardless of blade orientation
+  const n = g.attributes.normal;
+  for (let i = 0; i < n.count; i++) n.setXYZ(i, n.getX(i) * 0.3, 1, n.getZ(i) * 0.3);
+  return g;
 }
 
 function rockGeometry(seed) {
@@ -171,11 +202,11 @@ export function buildVegetation(worldId, preset, quality, heightFn, avoid) {
     group.add(makeInstanced(rockGeometry(7), vc, pts.map((p) => ({ p: new THREE.Vector3(p.x, p.h - 0.2, p.z), s: 0.3 + Math.pow(rng.next(), 2) * 2.2, ry: rng.next() * 6.28, rx: rng.next() * 0.4 }))));
   }
   if (v.grass) {
-    const tex = foliageTexture(worldId === 'tropical' ? '#5a9a3a' : '#4a7a2a');
-    const geo = mergeGeometries([new THREE.PlaneGeometry(0.9, 0.6).translate(0, 0.3, 0), new THREE.PlaneGeometry(0.9, 0.6).rotateY(Math.PI / 2).translate(0, 0.3, 0)]);
-    const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
+    const tip = worldId === 'tropical' ? 0x9ad070 : 0x8ab85a;
+    const base = worldId === 'tropical' ? 0x3a6a2a : 0x2e4a1e;
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
     const pts = scatter(rng, Math.round(quality.grass * v.grass), 160, heightFn, (h) => h > 0.4 && h < 15, avoid);
-    group.add(makeInstanced(geo, mat, pts.map((p) => ({ p: new THREE.Vector3(p.x, p.h - 0.03, p.z), s: 0.7 + rng.next() * 0.8, ry: rng.next() * 6.28 }))));
+    group.add(makeInstanced(grassGeometry(base, tip), mat, pts.map((p) => ({ p: new THREE.Vector3(p.x, p.h - 0.03, p.z), s: 0.7 + rng.next() * 0.8, ry: rng.next() * 6.28 }))));
   }
   if (v.reeds) {
     const pts = scatter(rng, Math.round(220 * v.reeds * (quality.trees / 160)), 220, heightFn, (h) => h > -0.6 && h < 0.35, avoid);
@@ -201,22 +232,55 @@ export function buildVegetation(worldId, preset, quality, heightFn, avoid) {
         pts.map((p) => ({ p: new THREE.Vector3(p.x, p.h, p.z), s: 0.6 + rng.next() * 1.2, ry: rng.next() * 6.28 })), cols));
     }
   }
-  if (v.mountains !== undefined) {
-    const parts = [];
-    for (let i = 0; i < 26; i++) {
-      const a = (i / 26) * Math.PI * 2 + rng.next() * 0.2;
-      const r = 300 + rng.next() * 60;
-      const h = 40 + rng.next() * (worldId === 'deep' || worldId === 'ocean' ? 30 : 110);
-      const cone = new THREE.ConeGeometry(50 + rng.next() * 60, h, 7).translate(Math.cos(a) * r, h / 2 - 8, Math.sin(a) * r);
-      parts.push(cone);
-    }
-    // ocean worlds: only distant islands on one side
-    const geo = mergeGeometries(parts);
-    const mat = new THREE.MeshBasicMaterial({ color: v.mountains, fog: false });
-    const m = new THREE.Mesh(geo, mat);
-    m.name = 'mountains';
-    group.add(m);
-  }
+  if (v.mountains !== undefined) group.add(buildMountains(worldId, v.mountains, preset));
   return group;
 }
 
+
+/** Distant mountain ring: polar heightfield with ridged fbm, snow caps and aerial perspective. */
+function buildMountains(worldId, baseColor, preset) {
+  const seaWorld = worldId === 'ocean' || worldId === 'deep' || worldId === 'tropical';
+  const segA = 160, segR = 14;
+  const rIn = 270, rOut = 420;
+  const pos = [], col = [], idx = [];
+  const base = new THREE.Color(baseColor);
+  const rock = base.clone().multiplyScalar(0.8);
+  const snow = new THREE.Color(worldId === 'deep' ? 0x203048 : 0xf2f6fa);
+  const haze = new THREE.Color(preset.sky.horizon);
+  const green = new THREE.Color(preset.ground ? preset.ground.mid : baseColor).multiplyScalar(0.7);
+  const c = new THREE.Color();
+  const maxH = seaWorld ? 45 : 120;
+  for (let j = 0; j <= segR; j++) {
+    const t = j / segR;
+    const r = rIn + (rOut - rIn) * t;
+    for (let i = 0; i <= segA; i++) {
+      const a = (i / segA) * Math.PI * 2;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      // islands only on parts of the horizon for sea worlds
+      const mask = seaWorld ? Math.max(0, fbm(Math.cos(a) * 2 + 7, Math.sin(a) * 2, 3, 5) * 2.2 - 1.05) : 1;
+      let ridge = 1 - Math.abs(fbm(x * 0.006, z * 0.006, 5, 13) * 2 - 1);
+      ridge = Math.pow(ridge, 1.6);
+      const profile = Math.sin(Math.PI * Math.min(1, t * 1.15));
+      let h = (ridge * 0.75 + fbm(x * 0.02, z * 0.02, 3, 2) * 0.25) * maxH * profile * mask - 6;
+      if (j === 0 || j === segR) h = -10;
+      pos.push(x, h, z);
+      const hn = Math.max(0, h) / maxH;
+      c.copy(green).lerp(rock, Math.min(1, hn * 2.2));
+      if (!seaWorld || worldId === 'deep') c.lerp(snow, Math.max(0, (hn - 0.55) / 0.2) > 1 ? 1 : Math.max(0, (hn - 0.55) / 0.2));
+      c.lerp(haze, 0.35 + t * 0.35);
+      col.push(c.r, c.g, c.b);
+    }
+  }
+  for (let j = 0; j < segR; j++) for (let i = 0; i < segA; i++) {
+    const a = j * (segA + 1) + i, b = a + segA + 1;
+    idx.push(a, a + 1, b, b, a + 1, b + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }));
+  m.name = 'mountains';
+  return m;
+}

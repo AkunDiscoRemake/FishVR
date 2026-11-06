@@ -14,9 +14,9 @@ export class MainMenuScreen {
       ['LEADERBOARD', () => m.go('leaderboard')],
       ['SETTINGS', () => m.go('settings')],
     ];
-    const bw = 480, bh = 74, x0 = 40;
+    const bw = 480, bh = 64, x0 = 40;
     items.forEach(([label, fn], i) => {
-      g.button(x0, 118 + i * (bh + 10), bw, bh, label, fn, { size: 34, color: i === 0 ? '#1f7a3a' : undefined });
+      g.button(x0, 112 + i * (bh + 8), bw, bh, label, fn, { size: 30, color: i === 0 ? '#1f7a3a' : undefined });
     });
     // right column: status
     const x = 560, w = W - x - 40;

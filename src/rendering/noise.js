@@ -26,10 +26,27 @@ export function fbm(x, y, octaves = 4, seed = 0) {
   return sum / norm;
 }
 
-/** Tileable noise for textures: samples on a torus so edges wrap. */
+/** Periodic value noise on an integer lattice (wraps every `period` cells). */
+function periodicNoise(x, y, period, seed) {
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const xf = x - xi, yf = y - yi;
+  const m = (v) => ((v % period) + period) % period;
+  const x0 = m(xi), x1 = m(xi + 1), y0 = m(yi), y1 = m(yi + 1);
+  const a = hash2(x0, y0, seed), b = hash2(x1, y0, seed);
+  const c = hash2(x0, y1, seed), d = hash2(x1, y1, seed);
+  const u = fade(xf), v = fade(yf);
+  return (a + (b - a) * u) + ((c + (d - c) * u) - (a + (b - a) * u)) * v;
+}
+
+/** Seamlessly tileable fbm for textures. u,v in [0,1). scale = base lattice cells per tile. */
 export function tileNoise(u, v, scale, octaves, seed) {
-  const TAU = Math.PI * 2;
-  const a = Math.cos(u * TAU) * scale, b = Math.sin(u * TAU) * scale;
-  const c = Math.cos(v * TAU) * scale, d = Math.sin(v * TAU) * scale;
-  return (fbm(a + c * 0.71, b + d * 0.37, octaves, seed) + fbm(c + 3.1, d + a * 0.5, octaves, seed + 9)) * 0.5;
+  let sum = 0, amp = 0.5, norm = 0;
+  let period = Math.max(1, Math.round(scale));
+  for (let i = 0; i < octaves; i++) {
+    sum += periodicNoise(u * period, v * period, period, seed + i * 31) * amp;
+    norm += amp;
+    amp *= 0.5;
+    period *= 2;
+  }
+  return sum / norm;
 }

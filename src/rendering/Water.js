@@ -70,8 +70,8 @@ varying vec4 vReflCoord;
 #endif
 void main() {
   vec2 flow = vec2(uFlow, 0.0) * uTime;
-  vec2 uv1 = vWorld.xz * 0.055 + vec2(uTime * 0.012, uTime * 0.008) + flow * 0.06;
-  vec2 uv2 = vWorld.xz * 0.16 - vec2(uTime * 0.018, -uTime * 0.011) + flow * 0.16;
+  vec2 uv1 = vWorld.xz * 0.035 + vec2(uTime * 0.012, uTime * 0.008) + flow * 0.06;
+  vec2 uv2 = vWorld.xz * 0.11 - vec2(uTime * 0.018, -uTime * 0.011) + flow * 0.16;
   vec3 n1 = texture2D(uNormalMap, uv1).xyz * 2.0 - 1.0;
   vec3 n2 = texture2D(uNormalMap, uv2).xyz * 2.0 - 1.0;
   vec2 det = (n1.xy + n2.xy) * uNormalStrength;

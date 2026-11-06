@@ -39,20 +39,20 @@ export class HUD {
     g.rect(0, 0, W, H, 'rgba(6,16,26,0.72)', 26);
     if (f) {
       const rc = RARITIES[f.species.rarity];
-      g.text(f.species.name, 24, 34, { size: 30, weight: 800, color: rc.color, maxWidth: 380 });
-      g.text('Score ' + f.score, W - 24, 34, { size: 30, align: 'right', weight: 800, color: '#ffd23f' });
-      g.text('PERFECT x' + f.perfects + (f.combo > 1 ? '   combo ' + f.combo : ''), W / 2 + 40, 34, { size: 24, align: 'center', color: '#fff6b0' });
-      // tension
-      g.text('TENSION', 24, 84, { size: 22, color: COLORS.dim });
+      g.text(f.species.name, 24, 32, { size: 28, weight: 800, color: rc.color, maxWidth: 300 });
+      g.text('PERFECT x' + f.perfects + (f.combo > 1 ? '  combo ' + f.combo : ''), 340, 32, { size: 22, color: '#fff6b0', maxWidth: 190 });
+      g.text(String(f.score), W - 24, 32, { size: 32, align: 'right', weight: 900, color: '#ffd23f' });
+      const bx = 130, bw = W - bx - 170;
+      g.text('TENSION', 24, 80, { size: 20, color: COLORS.dim });
       const tc = f.tension > 0.8 ? '#ff4a3a' : f.tension > 0.55 ? '#ffb23a' : '#5ddc5d';
-      g.bar(150, 72, W - 180, 24, Math.min(1, f.tension), tc);
-      g.text('FISH', 24, 124, { size: 22, color: COLORS.dim });
-      g.bar(150, 112, W - 180, 24, f.stamina, '#2ec4ff');
-      g.text('LINE', 24, 164, { size: 22, color: COLORS.dim });
-      g.bar(150, 152, W - 180, 24, Math.min(1, f.distance / f.maxLine), '#c8c8c8');
-      g.text(f.distance.toFixed(1) + ' m', W - 34, 164, { size: 20, align: 'right', color: '#1a1a1a', weight: 800 });
+      g.bar(bx, 68, bw, 24, Math.min(1, f.tension), tc);
+      g.text('FISH', 24, 118, { size: 20, color: COLORS.dim });
+      g.bar(bx, 106, bw, 24, f.stamina, '#2ec4ff');
+      g.text('LINE', 24, 156, { size: 20, color: COLORS.dim });
+      g.bar(bx, 144, bw, 24, Math.min(1, f.distance / f.maxLine), '#c8c8c8');
+      g.text(f.distance.toFixed(1) + ' m', bx + bw + 12, 156, { size: 20, color: '#ffffff', weight: 800 });
       if (f.countdown !== null && f.countdown !== undefined && f.countdown > 0) {
-        g.text('Duel starts in ' + Math.ceil(f.countdown), W / 2, 196, { size: 26, align: 'center', color: '#ffd23f' });
+        g.text('Duel starts in ' + Math.ceil(f.countdown), W / 2, 188, { size: 22, align: 'center', color: '#ffd23f' });
       }
     } else {
       g.text('Lv ' + this.info.level, 24, 40, { size: 30, weight: 800 });
@@ -65,7 +65,8 @@ export class HUD {
         g.bar(140, 168, W - 280, 22, this.power, this.power > 0.85 ? '#ffd23f' : '#2ec4ff');
       }
     }
-    g.button(W - 200, H - 82, 180, 64, 'MENU', () => this.onMenu && this.onMenu(), { size: 30 });
+    if (f) g.button(W - 120, 72, 100, 48, 'MENU', () => this.onMenu && this.onMenu(), { size: 20 });
+    else g.button(W - 200, H - 82, 180, 64, 'MENU', () => this.onMenu && this.onMenu(), { size: 30 });
   }
 
   _drawPrompt(g, W, H) {
@@ -96,6 +97,9 @@ export class HUD {
     this.status.mesh.position.set(0, fighting ? -0.55 : -0.72, -1.35);
     this.status.mesh.rotation.set(-0.45, 0, 0);
     this.prompts.mesh.position.set(0, 0.32, -2.2);
+    const flatScale = this.flat ? 0.75 : 1;
+    this.status.mesh.scale.setScalar(flatScale);
+    if (this.flat) this.status.mesh.position.set(0, fighting ? -0.5 : -0.62, -1.5);
     this.root.visible = !hidden;
 
     if (this.promptT > 0) { this.promptT -= dt; if (this.promptT <= 0) { this.promptText = null; this.prompts.dirty = true; } }

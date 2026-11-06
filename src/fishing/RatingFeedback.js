@@ -88,7 +88,7 @@ export class RatingFeedback {
     this.items = this.items.filter((i) => i.t <= 1.25);
     if (this.flashT < 1) {
       this.flashT += dt * 2.2;
-      this.flash.scale.setScalar(1 + this.flashT * 4);
+      this.flash.scale.setScalar(1 + this.flashT * 2.5);
       this.flash.material.opacity = Math.max(0, 1 - this.flashT);
     } else this.flash.material.opacity = 0;
   }

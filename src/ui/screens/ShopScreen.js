@@ -13,10 +13,10 @@ export class ShopScreen {
     const rod = RODS[this.sel];
     const model = new RodModel(rod, m.game.quality);
     const holder = new THREE_Group();
-    model.root.rotation.set(-Math.PI / 2 + 0.25, 0, 0);
-    model.root.position.set(0, -0.75, 0);
+    model.root.rotation.set(Math.PI / 2 - 0.2, 0, 0.35);
+    model.root.position.set(0, -0.55, 0);
     holder.add(model.root);
-    holder.scale.setScalar(0.9);
+    holder.scale.setScalar(0.6);
     m.setPreview(holder, () => model.dispose());
   }
   draw(g, W, H) {
