@@ -1,0 +1,38 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #06121c; color: #eef6ff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+#app, #app canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.hidden { display: none !important; }
+.logo { font-size: 34px; font-weight: 900; letter-spacing: 1px; }
+.logo span { color: #2ec4ff; }
+.dim { color: #8aa4b8; }
+.small { font-size: 14px; }
+#loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: radial-gradient(circle at 50% 40%, #0e3550, #06121c); z-index: 20; }
+#loading .bar { width: min(420px, 80vw); height: 10px; border-radius: 5px; background: #12324a; overflow: hidden; }
+#loading-bar { height: 100%; width: 0; background: linear-gradient(90deg, #2ec4ff, #ffd23f); transition: width .2s; }
+#overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(4, 12, 20, 0.72); padding: 16px; overflow: auto; }
+#overlay .card { width: min(920px, 100%); background: rgba(10, 26, 40, 0.96); border: 1px solid #1d4f73; border-radius: 18px; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); max-height: 100%; overflow: auto; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.buttons button { flex: 1 1 200px; font-size: 20px; padding: 16px; }
+button { background: #1d4f73; color: #fff; border: 0; border-radius: 10px; padding: 10px 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+button:hover { background: #2b77a8; }
+button.primary { background: #1f7a3a; }
+button:disabled { background: #2a3a46; color: #6a7a86; cursor: default; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+section h3 { margin: 6px 0 8px; }
+input, select { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid #1d4f73; background: #0b2233; color: #fff; font-size: 15px; }
+.row { display: flex; gap: 8px; margin-top: 6px; }
+.row button { flex: 1; }
+.msg { min-height: 20px; color: #ffd23f; font-size: 14px; }
+#flat-ui { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+#flat-ui button { pointer-events: auto; }
+#btn-show-overlay { position: absolute; top: 12px; right: 12px; padding: 10px 14px; opacity: .85; }
+#crosshair { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: rgba(255,255,255,.8); box-shadow: 0 0 4px #000; display: none; }
+body.locked #crosshair { display: block; }
+#touch-controls { position: absolute; inset: 0; }
+#joystick { position: absolute; left: 24px; bottom: 24px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.3); pointer-events: auto; touch-action: none; }
+#stick { position: absolute; left: 45px; top: 45px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.55); }
+#look-area { position: absolute; right: 0; top: 0; width: 55%; height: 70%; pointer-events: auto; touch-action: none; }
+#btn-action { position: absolute; right: 24px; bottom: 30px; width: 110px; height: 110px; border-radius: 50%; font-size: 18px; background: rgba(31,122,58,.85); }
+#btn-menu { position: absolute; top: 12px; left: 12px; }
+#btn-crouch { position: absolute; right: 150px; bottom: 40px; }

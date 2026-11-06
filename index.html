@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#06121c" />
+  <title>PERFECT FISHING VR</title>
+  <link rel="stylesheet" href="./src/ui/overlay.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="loading">
+    <div class="logo">PERFECT <span>FISHING</span> VR</div>
+    <div class="bar"><div id="loading-bar"></div></div>
+    <div id="loading-text">Loading...</div>
+  </div>
+
+  <div id="overlay" class="hidden">
+    <div class="card">
+      <div class="logo">PERFECT <span>FISHING</span> VR</div>
+      <p id="device-info" class="dim"></p>
+      <div id="vr-buttons" class="buttons"></div>
+      <div class="cols">
+        <section>
+          <h3>Account</h3>
+          <p id="account-status" class="dim"></p>
+          <form id="auth-form" autocomplete="on">
+            <input id="auth-email" type="email" placeholder="e-mail" autocomplete="email" />
+            <input id="auth-password" type="password" placeholder="password (6+ chars)" autocomplete="current-password" />
+            <input id="auth-username" type="text" placeholder="username (sign up / guest)" maxlength="20" />
+            <div class="row">
+              <button type="button" id="btn-signin">Sign in</button>
+              <button type="button" id="btn-signup">Sign up</button>
+              <button type="button" id="btn-guest">Guest</button>
+            </div>
+          </form>
+          <button type="button" id="btn-signout" class="hidden">Sign out</button>
+          <p id="auth-msg" class="msg"></p>
+        </section>
+        <section>
+          <h3>Controls</h3>
+          <ul class="dim small">
+            <li><b>Trigger</b>: hold &amp; release (or swing) to cast, strike on a bite, press on each PERFECT! ring during the fight.</li>
+            <li><b>Touchpad / stick</b>: up/down walk, left/right turn. Centre click: crouch. Hold centre: menu.</li>
+            <li><b>Desktop</b>: WASD walk, Q/E turn, right-drag or click-lock to look, left click / Space = trigger, C crouch, M menu.</li>
+            <li><b>Cardboard</b>: tap screen = trigger, gaze at buttons and tap. Look down + hold to walk.</li>
+          </ul>
+          <label class="small">Graphics
+            <select id="quality">
+              <option value="auto">Auto</option><option value="low">Low (Oculus Go)</option>
+              <option value="medium">Medium</option><option value="high">High (Quest 2/3, PC)</option>
+            </select>
+          </label>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="flat-ui" class="hidden">
+    <button id="btn-show-overlay" title="VR / account">VR</button>
+    <div id="touch-controls" class="hidden">
+      <div id="joystick"><div id="stick"></div></div>
+      <div id="look-area"></div>
+      <button id="btn-action">ACTION</button>
+      <button id="btn-menu">MENU</button>
+      <button id="btn-crouch">CROUCH</button>
+    </div>
+    <div id="crosshair"></div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
