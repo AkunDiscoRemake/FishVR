@@ -40,7 +40,7 @@ async function requireUser(req, admin) {
   return data.user;
 }
 function serve(handler) {
-  Deno.serve(async (req) => {
+  const wrapped = async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
     let body = {};
@@ -59,7 +59,13 @@ function serve(handler) {
       console.error(e);
       return json({ error: "internal_error" }, 500);
     }
-  });
+  };
+  const reg = globalThis.__pfvrRegister;
+  if (typeof reg === "function") {
+    reg(wrapped);
+    return;
+  }
+  Deno.serve(wrapped);
 }
 function must(res, what) {
   if (res.error) {

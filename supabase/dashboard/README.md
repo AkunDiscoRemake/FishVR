@@ -12,3 +12,8 @@ Arquivos gerados automaticamente (`npm run build:dashboard`) a partir de `supaba
 
 Cada `.ts` é um arquivo único (as regras do jogo já estão embutidas). O nome da função precisa ser exatamente o indicado.
 Não edite estes arquivos: edite as fontes e rode `npm run build:dashboard` de novo.
+
+## Atalho: um único arquivo para as 4 funções
+
+`game-server.ts` contém as quatro funções juntas (minificado) e escolhe qual executar pelo nome da função na URL.
+Crie as 4 funções no painel (`fishing-start`, `fishing-complete`, `shop`, `pvp`) e cole **o mesmo** `game-server.ts` em todas.

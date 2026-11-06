@@ -42,7 +42,7 @@ export async function requireUser(req: Request, admin: SupabaseClient): Promise<
 
 /** Wraps a handler with CORS, JSON parsing and error handling. */
 export function serve(handler: (req: Request, body: any) => Promise<Response>) {
-  Deno.serve(async (req: Request) => {
+  const wrapped = async (req: Request) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
     if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
     let body: any = {};
@@ -62,7 +62,12 @@ export function serve(handler: (req: Request, body: any) => Promise<Response>) {
       console.error(e);
       return json({ error: 'internal_error' }, 500);
     }
-  });
+  };
+  // The single-file dashboard build (supabase/dashboard/game-server.ts) registers every
+  // handler in one bundle and routes by function name instead of serving each one.
+  const reg = (globalThis as any).__pfvrRegister;
+  if (typeof reg === 'function') { reg(wrapped); return; }
+  Deno.serve(wrapped);
 }
 
 export function must<T>(res: { data: T | null; error: any }, what: string): T {
