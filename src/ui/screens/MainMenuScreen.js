@@ -32,7 +32,8 @@ export class MainMenuScreen {
       g.text('Duels won: ' + (p.stats.pvpWins || 0), x + 24, 352, { size: 24 });
     }
     const online = game.backend && game.backend.online;
-    g.text(online ? 'ONLINE - progress saved on the server' : 'OFFLINE - progress saved on this device', x + 24, 396, { size: 22, color: online ? COLORS.good : COLORS.dim, maxWidth: w - 48 });
+    const p2p = game.mp && game.mp.kind === 'p2p';
+    g.text(online ? 'ONLINE - progress saved on the server' : p2p ? 'Saved on this device - P2P duels: ' + game.mp.online.length + ' online' : 'OFFLINE - progress saved on this device', x + 24, 396, { size: 22, color: online ? COLORS.good : COLORS.dim, maxWidth: w - 48 });
     if (game.world) {
       const ev = eventFor(game.world.id, Date.now());
       g.text(game.world.def.name + (ev.id !== 'none' ? '  |  ' + ev.name : ''), x + 24, 430, { size: 22, color: '#ff9af0', maxWidth: w - 48 });

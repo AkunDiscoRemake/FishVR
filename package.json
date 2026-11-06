@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.119.0",
+    "@trystero-p2p/torrent": "^0.26.0",
     "three": "0.162.0"
   },
   "devDependencies": {

@@ -20,11 +20,12 @@ export class MultiplayerScreen {
 
   draw(g, W, H) {
     const m = this.menu, game = m.game, mp = this.mp;
-    if (!game.auth.configured) {
-      g.wrap('Multiplayer needs the Supabase server. The host of this game has not configured it yet (see SUPABASE_SETUP.md). Single-player works offline.', 40, 160, W - 80, 36, { size: 26, color: COLORS.dim });
+    const p2p = mp.kind === 'p2p';
+    if (p2p && !mp.available) {
+      g.wrap('This browser has no WebRTC, which peer-to-peer duels need. Try the Oculus/Meta Quest browser or Chrome over HTTPS.', 40, 160, W - 80, 36, { size: 26, color: COLORS.dim });
       return;
     }
-    if (!mp.available) {
+    if (!p2p && !mp.available) {
       g.wrap('Sign in to duel other players online. Use the 2D page for e-mail login, or start right now with a guest account:', 40, 160, W - 80, 36, { size: 26 });
       g.button(40, 260, 420, 80, 'PLAY ONLINE AS GUEST', () => m.run(async () => { await game.signInGuest(); await mp.start(); }, 'Welcome!'), { size: 28, color: '#1f7a3a' });
       return;
@@ -53,7 +54,8 @@ export class MultiplayerScreen {
     g.button(x + 18, 214, w - 36, 54, 'CREATE PUBLIC ROOM', () => m.run(() => mp.createRoom(false, wd.id), 'Room created'), { size: 22, color: '#1f7a3a' });
     g.button(x + 18, 278, w - 36, 54, 'CREATE PRIVATE ROOM', () => m.run(() => mp.createRoom(true, wd.id), 'Private room created'), { size: 22 });
     g.button(x + 18, 342, w - 36, 54, 'JOIN WITH CODE', () => { this.view = 'code'; this.code = ''; m.refresh(); }, { size: 22 });
-    g.text(mp.online.length + ' players online', x + 18, 432, { size: 20, color: COLORS.good });
+    g.text(mp.online.length + ' players online' + (p2p ? '  (P2P)' : ''), x + 18, 432, { size: 20, color: COLORS.good });
+    if (p2p && mp.online.length <= 1) g.text('Looking for players...', x + 18, 456, { size: 16, color: COLORS.dim });
     g.text('INVITES', x + 18, 468, { size: 22, weight: 800 });
     if (!mp.invites.length) g.text('none', x + 18, 500, { size: 18, color: COLORS.dim });
     mp.invites.slice(0, 2).forEach((inv, i) => {
@@ -102,7 +104,7 @@ export class MultiplayerScreen {
     const x = 660, w = W - x - 30;
     g.rect(x, 104, w, 510, COLORS.panel, 16);
     if (room.status === 'lobby') {
-      g.wrap('Everyone fights the SAME fish. Each action is rated PERFECT! to Failed!. First to land the fish with at least ' + room.min_score + ' points wins ' + room.prize + ' coins.', x + 18, 136, w - 36, 26, { size: 18, color: COLORS.dim });
+      g.wrap('Everyone fights the SAME fish. Each action is rated PERFECT! to Failed!. First to land the fish with at least ' + room.min_score + ' points wins ' + room.prize + ' coins.' + (mp.kind === 'p2p' ? ' The host\'s game is the referee.' : ''), x + 18, 136, w - 36, 26, { size: 18, color: COLORS.dim });
       const me = mp.participants.find((p) => p.user_id === mp.uid);
       if (!isHost) g.button(x + 18, 290, w - 36, 60, me && me.ready ? 'NOT READY' : 'READY', () => m.run(() => mp.setReady(!(me && me.ready))), { size: 26, color: me && me.ready ? undefined : '#1f7a3a' });
       else {

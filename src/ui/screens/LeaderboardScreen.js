@@ -9,7 +9,13 @@ export class LeaderboardScreen {
     const game = this.menu.game;
     this.loading = true; this.menu.refresh();
     try {
-      this.rows = await game.backend.leaderboard(this.tab);
+      if (!game.backend.online && game.mp && game.mp.kind === 'p2p') {
+        // no server: rank the players online right now by their own reported stats
+        if (!game.mp.started) await game.mp.start();
+        const col = (TABS.find((t) => t[0] === this.tab) || TABS[0])[2];
+        this.rows = game.mp.online.slice().sort((a, b) => (b[col] || 0) - (a[col] || 0));
+        this.p2p = true;
+      } else this.rows = await game.backend.leaderboard(this.tab);
       this.history = game.backend.matchHistory ? await game.backend.matchHistory() : [];
       this.error = null;
     } catch (e) { this.error = e.message; }
@@ -18,8 +24,10 @@ export class LeaderboardScreen {
   draw(g, W, H) {
     const m = this.menu, game = m.game;
     TABS.forEach(([id, label], i) => g.button(30 + i * 150, 106, 142, 48, label, () => { this.tab = id; this.load(); }, { size: 20, active: this.tab === id }));
+    if (this.p2p) g.button(W - 190, 106, 160, 48, 'REFRESH', () => this.load(), { size: 20 });
     const col = (TABS.find((t) => t[0] === this.tab) || TABS[0])[2];
-    if (!game.backend.online) g.text('Offline: sign in (2D page) to compete in the global ranking.', 30, 180, { size: 22, color: COLORS.dim });
+    if (this.p2p) g.text('Players online now (self-reported, P2P - no central server)', 30, 176, { size: 20, color: COLORS.dim });
+    else if (!game.backend.online) g.text('Offline: sign in (2D page) to compete in the global ranking.', 30, 180, { size: 22, color: COLORS.dim });
     if (this.loading) g.text('Loading...', 30, 220, { size: 24, color: COLORS.accent });
     if (this.error) g.text('Error: ' + this.error, 30, 220, { size: 22, color: COLORS.bad });
     const me = game.profile ? game.profile.username : '';
@@ -36,7 +44,11 @@ export class LeaderboardScreen {
     const hx = 700, hw = W - hx - 30;
     g.rect(hx, 170, hw, 440, COLORS.panel, 16);
     g.text('MY DUEL HISTORY', hx + 18, 200, { size: 22, weight: 800 });
-    if (!this.history || !this.history.length) g.text(game.backend.online ? 'No duels yet.' : 'Online only.', hx + 18, 240, { size: 20, color: COLORS.dim });
+    if (!this.history || !this.history.length) {
+      const st = game.profile ? game.profile.stats : {};
+      if (game.backend.online) g.text('No duels yet.', hx + 18, 240, { size: 20, color: COLORS.dim });
+      else { g.text('Wins: ' + (st.pvpWins || 0), hx + 18, 240, { size: 22 }); g.text('Losses: ' + (st.pvpLosses || 0), hx + 18, 276, { size: 22 }); }
+    }
     (this.history || []).slice(0, 10).forEach((h, i) => {
       const y = 238 + i * 36;
       const won = h.winner_id && h.winner_id === h.user_id;

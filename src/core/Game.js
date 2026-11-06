@@ -21,6 +21,8 @@ import { AuthService } from '../supabase/AuthService.js';
 import { OfflineBackend } from '../economy/OfflineBackend.js';
 import { OnlineBackend } from '../economy/OnlineBackend.js';
 import { MultiplayerService } from '../multiplayer/MultiplayerService.js';
+import { P2PMultiplayerService } from '../multiplayer/P2PMultiplayerService.js';
+import { supabaseConfigured } from '../supabase/client.js';
 import { PvPMatch } from '../multiplayer/PvPMatch.js';
 import { SPECIES, WORLDS_BY_ID, eventFor } from '@game/index.js';
 
@@ -87,7 +89,8 @@ export class Game {
     this.auth = new AuthService();
     try { await this.auth.init(); } catch (e) { console.warn(e); }
     await this._setupBackend();
-    this.mp = new MultiplayerService(this);
+    // Supabase when configured, otherwise serverless peer-to-peer multiplayer (WebRTC).
+    this.mp = supabaseConfigured ? new MultiplayerService(this) : new P2PMultiplayerService(this);
     this.menu = new Menu(this);
     this.catchCard = new CatchCard(this);
     this.pvp = new PvPMatch(this, this.mp);

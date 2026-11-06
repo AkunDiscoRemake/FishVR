@@ -132,10 +132,18 @@ export class OfflineBackend {
 
   async sellAll() { return this.sellFish(this.data.inventory.map((f) => f.id)); }
 
+  /** Result of a peer-to-peer duel (refereed by the room host). */
+  recordDuel(won, prize) {
+    const d = this.data;
+    if (won) { d.stats.pvpWins = (d.stats.pvpWins || 0) + 1; d.coins += Math.max(0, prize || 0); }
+    else d.stats.pvpLosses = (d.stats.pvpLosses || 0) + 1;
+    this._save();
+  }
+
   async setUsername(name) { this.data.username = name; this._save(); }
 
   async leaderboard() {
     const d = this.data;
-    return [{ username: d.username + ' (this device)', level: levelFromXp(d.xp), coins: d.coins, total_catches: d.stats.totalCatches, total_score: d.stats.totalScore, legendary_catches: d.stats.legendary, pvp_wins: 0, best_score: d.stats.bestScore }];
+    return [{ username: d.username + ' (this device)', level: levelFromXp(d.xp), coins: d.coins, total_catches: d.stats.totalCatches, total_score: d.stats.totalScore, legendary_catches: d.stats.legendary, pvp_wins: d.stats.pvpWins || 0, best_score: d.stats.bestScore }];
   }
 }

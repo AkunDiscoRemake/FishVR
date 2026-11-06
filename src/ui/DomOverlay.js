@@ -43,6 +43,16 @@ export class DomOverlay {
     $('btn-signup').addEventListener('click', () => this._auth('signup'));
     $('btn-guest').addEventListener('click', () => this._auth('guest'));
     $('btn-signout').addEventListener('click', () => this._auth('signout'));
+    const nameInput = $('p2p-name-input');
+    nameInput.value = this.game.profile ? this.game.profile.username : '';
+    nameInput.addEventListener('change', async () => {
+      const n = nameInput.value.trim().replace(/[^A-Za-z0-9_]/g, '').slice(0, 20);
+      if (n.length < 3) { this.msg('Name: 3-20 letters, digits or _'); return; }
+      await this.game.backend.setUsername(n);
+      await this.game.refreshProfile();
+      nameInput.value = n;
+      this.msg('Saved: ' + n);
+    });
     $('btn-show-overlay').addEventListener('click', () => this.show());
     bus.on('auth', () => this._renderAccount());
     bus.on('profile', () => this._renderAccount());
@@ -68,8 +78,9 @@ export class DomOverlay {
     const p = this.game.profile;
     const form = $('auth-form');
     if (!auth.configured) {
-      $('account-status').textContent = 'Online server not configured (VITE_SUPABASE_URL). Offline single-player only.';
+      $('account-status').textContent = 'No account needed: progress is saved on this device and multiplayer duels connect players directly (peer-to-peer). Choose your player name:';
       form.classList.add('hidden');
+      $('p2p-name').classList.remove('hidden');
       $('btn-signout').classList.add('hidden');
       return;
     }

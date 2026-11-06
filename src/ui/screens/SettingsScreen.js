@@ -54,7 +54,8 @@ export class SettingsScreen {
     g.text('ACCOUNT', x + 20, 140, { size: 24, weight: 800 });
     const auth = game.auth;
     if (!auth.configured) {
-      g.wrap('Online server not configured. Playing offline (see SUPABASE_SETUP.md).', x + 20, 180, w - 40, 28, { size: 19, color: COLORS.dim });
+      g.wrap('No account needed. Progress is saved on this device; duels connect players directly (P2P).', x + 20, 180, w - 40, 28, { size: 19, color: COLORS.dim });
+      g.text('Name: ' + (game.profile ? game.profile.username : ''), x + 20, 262, { size: 20, maxWidth: w - 40 });
     } else if (auth.isLoggedIn) {
       g.text(game.profile ? game.profile.username : '', x + 20, 180, { size: 22, color: COLORS.good, maxWidth: w - 40 });
       g.text(auth.user.is_anonymous ? 'Guest account' : (auth.user.email || ''), x + 20, 212, { size: 18, color: COLORS.dim, maxWidth: w - 40 });

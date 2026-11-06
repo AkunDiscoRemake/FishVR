@@ -30,8 +30,16 @@ npm run build        # production build in dist/
 npm run preview      # serve dist/
 ```
 
-Without a `.env.local` the game runs in **offline mode**: single-player works and
-progress is saved in `localStorage`. To enable accounts, the ranking and PvP, follow
+**Multiplayer works with no server at all.** Without a `.env.local`, progress is saved on
+the device (`localStorage`) and PvP duels are **peer-to-peer** (WebRTC, library
+`@trystero-p2p/torrent`). Public WebTorrent trackers are used only so players can find each
+other; game traffic goes directly between the players. In each duel the **room host's game is
+the referee**: it rolls the shared fish, keeps the clock and re-simulates every player's
+actions with the same rules the server used. The lobby shows players online, public rooms,
+6-digit private codes and invites, and the leaderboard ranks the players online right now
+(self-reported stats).
+
+Optional: for server-validated accounts, a global ranking and server-side anti-cheat, follow
 **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** and create `.env.local`:
 
 ```
@@ -40,6 +48,13 @@ VITE_SUPABASE_ANON_KEY=YOUR-ANON-PUBLIC-KEY
 ```
 
 ## Hosting
+
+**Without a PC (GitHub Pages):** in the GitHub repository open **Settings → Pages** and set
+*Source* to **GitHub Actions**. The workflow `.github/workflows/pages.yml` builds and publishes
+the game on every push, or from **Actions → Publish game → Run workflow**. The site appears at
+`https://<user>.github.io/<repo>/`. Open that address in the Oculus Go browser.
+
+**Elsewhere:**
 
 `npm run build` produces a fully static site in `dist/` (relative paths, so any sub-folder works).
 Host it on any **HTTPS** static host: Netlify, Vercel, Cloudflare Pages, GitHub Pages or S3+CloudFront.
@@ -187,7 +202,11 @@ both Vite (alias `@game`) and the Deno Edge Functions. Client and server simulat
 * **Visuals:** all models and textures are procedural (no downloaded art). They are detailed for
   the budget but are not photogrammetry. Planar water reflections are on only on desktop
   high, because stereo planar reflections cost too much on mobile VR.
-* **Anti-cheat:** the server prevents forged fish, coins, purchases, results and impossible timings,
+* **P2P duels:** the host's game is the referee, so a modified host client could cheat in its own
+  room. Progress and ranking are local or self-reported without Supabase. Very strict networks
+  (some corporate/mobile NATs) can block direct WebRTC connections, because no TURN relay is used.
+  The WebTorrent trackers are free community services and can occasionally be slow to connect.
+* **Anti-cheat (Supabase mode):** the server prevents forged fish, coins, purchases, results and impossible timings,
   and rejects inhumanly perfect aim. It cannot fully stop a modified client that aims for the
   player (true of any client-rendered aiming game).
 * WebXR, WebVR and motion sensors **require HTTPS**.
