@@ -25,6 +25,7 @@ npm install
 npm run dev          # http://localhost:5173  (desktop testing)
 npm run dev:https    # https://<your-LAN-IP>:5173  (headsets: WebXR needs HTTPS)
 npm test             # rule/fight-model unit tests (node:test)
+npm run test:functions  # Edge Function integration tests (needs Deno: https://deno.com)
 npm run build        # production build in dist/
 npm run preview      # serve dist/
 ```
@@ -164,6 +165,7 @@ supabase/
   migrations/              schema, RLS, functions, realtime
   functions/               Edge Functions + _shared/game (rules shared with the client)
 tests/                     fight model / rules tests
+supabase/functions/_tests  Edge Function tests (real handlers + in-memory supabase-js mock)
 ```
 
 The **game rules live in one place** (`supabase/functions/_shared/game`) and are imported by

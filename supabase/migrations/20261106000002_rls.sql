@@ -57,8 +57,8 @@ drop policy if exists rooms_read on public.pvp_rooms;
 create policy rooms_read on public.pvp_rooms for select to authenticated using (
   is_private = false
   or host_id = auth.uid()
-  or public.is_room_member(id)
-  or exists (select 1 from public.pvp_invites i where i.room_id = id and i.to_user = auth.uid())
+  or public.is_room_member(pvp_rooms.id)
+  or exists (select 1 from public.pvp_invites i where i.room_id = pvp_rooms.id and i.to_user = auth.uid())
 );
 revoke insert, update, delete on public.pvp_rooms from anon, authenticated;
 grant select on public.pvp_rooms to authenticated;

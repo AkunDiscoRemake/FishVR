@@ -240,10 +240,34 @@ export class Game {
     if (this.world) this.world.setPixelHeight(this.vr.pixelHeight());
   }
 
+  /**
+   * Adaptive rendering: keeps the frame rate near the display refresh. Flat screen adjusts
+   * the pixel ratio; immersive modes raise fixed foveation and thin out vegetation.
+   */
+  _adapt() {
+    const target = this.vr.mode === 'flat' || this.vr.mode === 'cardboard' ? 55 : 68;
+    this._adaptLevel = this._adaptLevel || 0;
+    if (this.fps < target * 0.85 && this._adaptLevel < 3) this._adaptLevel++;
+    else if (this.fps > target * 1.05 && this._adaptLevel > 0) this._adaptLevel--;
+    else return;
+    const L = this._adaptLevel, q = this.quality;
+    if (this.vr.mode === 'flat' || this.vr.mode === 'cardboard') {
+      const pr = Math.min(window.devicePixelRatio || 1, q.pixelRatio) * [1, 0.85, 0.7, 0.55][L];
+      this.renderer.setPixelRatio(Math.max(0.5, pr));
+      this.particles.setPixelHeight(this.vr.pixelHeight());
+    } else if (this.vr.mode === 'webxr') {
+      try { this.renderer.xr.setFoveation(Math.min(1, q.foveation + L * 0.25)); } catch (e) { /* not supported */ }
+    }
+    if (this.world && this.world.vegetation) {
+      // drop grass/reeds first (most instances), keep trees and structures
+      this.world.vegetation.children.forEach((m, i) => { if (m.isInstancedMesh && m.count > 200) m.visible = L < 2 || i % 2 === 0; });
+    }
+  }
+
   _frame() {
     const dt = Math.min(0.1, this.clock.getDelta());
     this._fpsAcc += dt; this._fpsN++;
-    if (this._fpsAcc > 1) { this.fps = this._fpsN / this._fpsAcc; this._fpsAcc = 0; this._fpsN = 0; }
+    if (this._fpsAcc > 1) { this.fps = this._fpsN / this._fpsAcc; this._fpsAcc = 0; this._fpsN = 0; this._adapt(); }
     const input = this.input;
     input.update(dt);
     if (input.menuToggle) this.toggleMenu();

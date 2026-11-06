@@ -224,6 +224,7 @@ export class FishingController {
     if (result === 'caught') {
       this.state = 'landing';
       this.landT = 0;
+      this._updateLandPose();
       if (biter) { biter.state = 'landed'; biter.timer = 0; }
       audio.catchFanfare(f.species.rarity);
       this.ctx.particles.splash(this.lure.pos.clone().setY(0), 1.4);
@@ -428,12 +429,7 @@ export class FishingController {
       }
       case 'landing': {
         this.landT += dt;
-        const head = this._head();
-        const fwd = this.fight.forward;
-        const side = new THREE.Vector3(fwd.z, 0, -fwd.x); // to the player's left (the catch card sits on the right)
-        const landPos = head.clone().addScaledVector(fwd, 1.25).addScaledVector(side, 0.35).add(new THREE.Vector3(0, -0.3, 0));
-        this.landPos = landPos;
-        this.landYaw = Math.atan2(-fwd.x, -fwd.z);
+        this._updateLandPose();
         const fish = this.ctx.fish.biter;
         lineEnd = fish ? fish.object.localToWorld(new THREE.Vector3(0, 0, 0.5)) : this.tip.clone().add(new THREE.Vector3(0, -0.5, 0));
         this.line.length = this.tip.distanceTo(lineEnd);
@@ -473,6 +469,7 @@ export class FishingController {
       }
       case 'result':
       case 'duel-done':
+        if (this.fight && this.fight.state.result === 'caught') this._updateLandPose();
         lineEnd = this.ctx.fish.biter ? this.ctx.fish.biter.object.localToWorld(new THREE.Vector3(0, 0, 0.5)) : this.tip.clone().add(new THREE.Vector3(0, -0.4, 0));
         this.line.length = this.tip.distanceTo(lineEnd);
         break;
@@ -578,11 +575,21 @@ export class FishingController {
     // haptics: rumble with tension
     f.hapticAcc += dt;
     if (f.hapticAcc > 0.18 && this.tensionVis > 0.45 && !st.done) { f.hapticAcc = 0; input.pulse(Math.min(1, this.tensionVis * 0.6), 30); }
-    this.ctx.hud.setFight({
+    if (!f.ended) this.ctx.hud.setFight({
       species: f.species, tension: this.tensionVis, stamina: st.hp / st.hpMax, distance: f.dispDistance, maxLine: f.params.maxLine,
       score: st.score, combo: st.combo, perfects: st.perfects, counts: st.counts, phase, beatKind: kind,
       countdown: this.state === 'duel-countdown' ? -(this.time - f.startAt) : null,
     });
+  }
+
+  /** Where the landed fish hangs: in front of the player, a bit to the left of the catch card. */
+  _updateLandPose() {
+    const head = this._head();
+    const fwd = this.fight.forward;
+    const side = new THREE.Vector3(fwd.z, 0, -fwd.x); // player's left
+    if (!this.landPos) this.landPos = new THREE.Vector3();
+    this.landPos.copy(head).addScaledVector(fwd, 1.25).addScaledVector(side, 0.35).add(new THREE.Vector3(0, -0.3, 0));
+    this.landYaw = Math.atan2(-fwd.x, -fwd.z) + Math.PI / 2; // show the flank to the player
   }
 
   /** Called by the game once the player closes the catch card. */

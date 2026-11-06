@@ -315,6 +315,12 @@ export class InputManager {
     if (this.menu.pressed) this.menuToggle = true;
     this.trigger.set(trig, dt);
     this.consumedTrigger = false;
+    // Cardboard / gaze-only: look at the floor and hold the trigger to walk forward
+    this.gazeWalk = false;
+    if (mode === 'cardboard' && this.trigger.down && !this.move.y) {
+      const e = new THREE.Euler().setFromQuaternion(this.camera.quaternion, 'YXZ');
+      if (e.x < -0.6) { this.gazeWalk = true; this.move.y = 1; this.consumedTrigger = true; }
+    }
 
     // ---------------- hand pose for gaze / flat modes
     if (!handPosed) {

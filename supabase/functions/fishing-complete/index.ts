@@ -28,7 +28,7 @@ serve(async (req, body) => {
       p_session: session.id, p_status: status, p_result: result,
       p_value: value, p_xp: xp, p_score: score, p_perfects: perfects,
     }), 'complete') as any;
-    return json({ status, ...result, value, xp, ...out });
+    return json({ ...out, total_xp: out.xp, status, ...result, value, xp });
   };
 
   if (elapsed > GAME.SESSION_TTL_SEC) return close('expired', { reason: 'session_expired' });
